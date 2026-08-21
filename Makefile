@@ -11,6 +11,7 @@ PORT        ?= 8000
 
 help:
 	@echo "Alvos disponiveis:"
+	@echo "  help     Mostra esta mensagem"
 	@echo "  install  Instala as dependencias com o poetry"
 	@echo "  run      Sobe a API em http://$(HOST):$(PORT)"
 
