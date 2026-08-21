@@ -1,0 +1,19 @@
+[project]
+name = "c216-lab-backend"
+version = "0.1.0"
+description = "Backend do laboratorio de C216"
+authors = [
+    {name = "Gabriel Pivoto", email = "gabrielspivoto@gmail.com"}
+]
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "fastapi (>=0.141.1,<0.142.0)",
+    "uvicorn[standard] (>=0.52.4,<0.53.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
