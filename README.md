@@ -5,14 +5,16 @@ Repositorio dos laboratorios e do projeto final da disciplina C216.
 ## Como usar
 
 ```bash
-make install
-make run
+make help      # lista os alvos disponiveis
+make install   # instala as dependencias com o poetry
+make run       # sobe a API em http://localhost:8000
 ```
 
-A API responde em http://localhost:8000 com `{"status": "ok"}`.
+`GET /` responde `{"status": "ok"}`.
 
 ## Branches
 
 - `main`
 - `aulas`
 - `projeto-final`
+- `pratica-1`
