@@ -8,13 +8,14 @@ PORT        ?= 8000
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install run build up down logs shell db-shell
+.PHONY: help install run test build up down logs shell db-shell
 
 help:
 	@echo "Alvos disponiveis:"
 	@echo "  help      Mostra esta mensagem"
 	@echo "  install   Instala as dependencias com o poetry"
 	@echo "  run       Sobe a API local em http://$(HOST):$(PORT)"
+	@echo "  test      Roda os testes com o pytest"
 	@echo "  build     Constroi as imagens do compose"
 	@echo "  up        Sobe os servicos do compose em segundo plano"
 	@echo "  down      Derruba os servicos do compose"
@@ -27,6 +28,9 @@ install:
 
 run:
 	cd $(BACKEND_DIR) && $(POETRY) run uvicorn $(APP) --host $(HOST) --port $(PORT) --reload
+
+test:
+	cd $(BACKEND_DIR) && $(POETRY) run pytest
 
 build:
 	$(COMPOSE) build
