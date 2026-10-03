@@ -8,7 +8,7 @@ PORT        ?= 8000
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install run test build up down logs shell db-shell
+.PHONY: help install run test test-unit test-integration build up down logs shell db-shell
 
 help:
 	@echo "Alvos disponiveis:"
@@ -16,6 +16,8 @@ help:
 	@echo "  install   Instala as dependencias com o poetry"
 	@echo "  run       Sobe a API local em http://$(HOST):$(PORT)"
 	@echo "  test      Roda os testes com o pytest"
+	@echo "  test-unit         Roda apenas os testes unitarios"
+	@echo "  test-integration  Roda apenas os testes de integracao"
 	@echo "  build     Constroi as imagens do compose"
 	@echo "  up        Sobe os servicos do compose em segundo plano"
 	@echo "  down      Derruba os servicos do compose"
@@ -31,6 +33,12 @@ run:
 
 test:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest
+
+test-unit:
+	cd $(BACKEND_DIR) && $(POETRY) run pytest tests/unit
+
+test-integration:
+	cd $(BACKEND_DIR) && $(POETRY) run pytest tests/integration
 
 build:
 	$(COMPOSE) build
