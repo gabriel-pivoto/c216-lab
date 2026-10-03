@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from app.api.router import api_router
 
 
-@app.get("/")
-def status():
-    return {"status": "ok"}
+def create_app() -> FastAPI:
+    application = FastAPI(title="C216 Lab - Backend")
+    application.include_router(api_router)
+    return application
+
+
+app = create_app()
