@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
+from app.models.book import BookModel
 from app.schemas.book import MAX_YEAR, MIN_YEAR, Book, BookCreate, BookPatch
 
 
@@ -64,3 +65,9 @@ def test_book_patch_validates_sent_fields() -> None:
 def test_book_patch_rejects_unknown_fields() -> None:
     with pytest.raises(ValidationError):
         BookPatch(isbn="978-8535914849")
+
+
+def test_book_is_built_from_the_orm_model(valid_data: dict) -> None:
+    model = BookModel(id=7, **valid_data)
+
+    assert Book.model_validate(model) == Book(id=7, **valid_data)
