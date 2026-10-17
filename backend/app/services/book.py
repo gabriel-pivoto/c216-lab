@@ -1,41 +1,42 @@
+from app.models.book import BookModel
+from app.repositories.book import BookRepository
 from app.schemas.book import Book, BookCreate, BookPatch, BookUpdate
 
-# No database yet: the service only builds and returns values.
-SAMPLE_BOOKS: tuple[Book, ...] = (
-    Book(id=1, title="Dom Casmurro", author="Machado de Assis", year=1899, pages=256, genre="Romance", price=39.9),
-    Book(id=2, title="1984", author="George Orwell", year=1949, pages=328, genre="Dystopia", price=49.9),
-    Book(id=3, title="Memorias Postumas de Bras Cubas", author="Machado de Assis", year=1881, pages=208, genre="Romance", price=34.9),
-    Book(id=4, title="The Hobbit", author="J. R. R. Tolkien", year=1937, pages=310, genre="Fantasy", price=59.9),
-)
 
-NEW_BOOK_ID = len(SAMPLE_BOOKS) + 1
+class BookNotFoundError(LookupError):
+    def __init__(self, book_id: int) -> None:
+        super().__init__(f"Book {book_id} not found")
+        self.book_id = book_id
 
 
-def list_books(author: str | None = None, limit: int = 10) -> list[Book]:
-    books = SAMPLE_BOOKS
-    if author is not None:
-        books = tuple(book for book in books if book.author.lower() == author.lower())
-    return list(books[:limit])
+class BookService:
+    def __init__(self, repository: BookRepository) -> None:
+        self.repository = repository
 
+    def list_books(self, author: str | None = None, limit: int = 10) -> list[Book]:
+        books = self.repository.list_all(author=author, limit=limit)
+        return [Book.model_validate(book) for book in books]
 
-def get_book(book_id: int) -> Book:
-    base = SAMPLE_BOOKS[0]
-    return base.model_copy(update={"id": book_id})
+    def get_book(self, book_id: int) -> Book:
+        return Book.model_validate(self._find(book_id))
 
+    def create_book(self, data: BookCreate) -> Book:
+        return Book.model_validate(self.repository.create(data.model_dump()))
 
-def create_book(data: BookCreate) -> Book:
-    return Book(id=NEW_BOOK_ID, **data.model_dump())
+    def replace_book(self, book_id: int, data: BookUpdate) -> Book:
+        book = self.repository.update(self._find(book_id), data.model_dump())
+        return Book.model_validate(book)
 
+    def update_book(self, book_id: int, data: BookPatch) -> Book:
+        changes = data.model_dump(exclude_unset=True, exclude_none=True)
+        book = self.repository.update(self._find(book_id), changes)
+        return Book.model_validate(book)
 
-def replace_book(book_id: int, data: BookUpdate) -> Book:
-    return Book(id=book_id, **data.model_dump())
+    def delete_book(self, book_id: int) -> None:
+        self.repository.delete(self._find(book_id))
 
-
-def update_book(book_id: int, data: BookPatch) -> Book:
-    current = get_book(book_id)
-    changes = data.model_dump(exclude_unset=True, exclude_none=True)
-    return current.model_copy(update=changes)
-
-
-def delete_book(book_id: int) -> None:
-    return None
+    def _find(self, book_id: int) -> BookModel:
+        book = self.repository.get(book_id)
+        if book is None:
+            raise BookNotFoundError(book_id)
+        return book
