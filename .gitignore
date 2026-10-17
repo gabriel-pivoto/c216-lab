@@ -3,6 +3,4 @@ __pycache__/
 .venv/
 .env
 .vscode/
-
-# Ruff
 .ruff_cache/

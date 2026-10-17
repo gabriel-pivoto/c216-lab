@@ -7,8 +7,6 @@ from app.models.book import BookModel
 
 
 class BookRepository:
-    """Book data access: the only layer that knows about SQLAlchemy."""
-
     def __init__(self, session: Session) -> None:
         self.session = session
 

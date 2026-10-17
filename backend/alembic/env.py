@@ -5,15 +5,13 @@ from sqlalchemy import engine_from_config, pool
 
 from app.database.base import Base
 from app.database.config import get_database_url
-from app.models import BookModel  # noqa: F401  (registers the models in the metadata)
+from app.models import BookModel  # noqa: F401
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-# The URL comes from the DATABASE_URL environment variable, unless whoever called
-# Alembic (e.g. the integration tests) has already set sqlalchemy.url.
 if not config.get_main_option("sqlalchemy.url"):
     config.set_main_option("sqlalchemy.url", get_database_url().replace("%", "%%"))
 
@@ -21,7 +19,6 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Render the migrations as SQL without connecting to the database (upgrade --sql)."""
     context.configure(
         url=config.get_main_option("sqlalchemy.url"),
         target_metadata=target_metadata,
@@ -34,7 +31,6 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Apply the migrations connected to the database."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

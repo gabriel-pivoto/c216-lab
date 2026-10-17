@@ -50,7 +50,6 @@ def alembic_config() -> Config:
 
 @pytest.fixture(scope="session")
 def test_engine(alembic_config: Config) -> Iterator[Engine]:
-    """Makes sure the test database exists in PostgreSQL with every migration applied."""
     try:
         _create_database_if_missing(TEST_DATABASE_URL)
         command.upgrade(alembic_config, "head")
@@ -69,7 +68,6 @@ def test_engine(alembic_config: Config) -> Iterator[Engine]:
 
 @pytest.fixture
 def database(test_engine: Engine) -> Iterator[sessionmaker[Session]]:
-    """Clean test database; the API starts using sessions bound to it."""
     with test_engine.begin() as connection:
         connection.execute(text("TRUNCATE TABLE books RESTART IDENTITY"))
 
