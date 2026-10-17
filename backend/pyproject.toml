@@ -8,7 +8,11 @@ authors = [
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
-    "uvicorn[standard] (>=0.52.4,<0.53.0)"
+    "uvicorn[standard] (>=0.52.4,<0.53.0)",
+    "sqlalchemy (>=2.0,<3.0)",
+    "psycopg[binary] (>=3.2,<4.0)",
+    "alembic (>=1.14,<2.0)",
+    "python-dotenv (>=1.0,<2.0)"
 ]
 
 [build-system]
@@ -21,6 +25,7 @@ package-mode = false
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 httpx = "^0.28.1"
+ruff = "^0.17.0"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -30,3 +35,14 @@ markers = [
     "unit: unit tests (no HTTP layer)",
     "integration: integration tests through TestClient",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+# The alembic/ folder (migrations) would make ruff treat the alembic package as local
+known-third-party = ["alembic"]
