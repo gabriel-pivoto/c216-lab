@@ -38,7 +38,9 @@ describe("BookList", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText("Dom Casmurro")).toBeInTheDocument();
     expect(screen.getByText("Machado de Assis")).toBeInTheDocument();
-    expect(screen.getByText(/1899 · 256 páginas · Romance · R\$\s39,90/)).toBeInTheDocument();
+    expect(screen.getByText("Romance")).toBeInTheDocument();
+    expect(screen.getByText("1899 · 256 páginas")).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s39,90/)).toBeInTheDocument();
   });
 
   it("calls onRemove with the id of the clicked book", async () => {

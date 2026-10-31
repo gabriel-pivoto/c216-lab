@@ -19,15 +19,20 @@ export default function BooksPage({ initialBooks = [] }) {
   const visibleBooks = filterByAuthor(books, filter);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <BookForm onSubmit={addBook} />
+    <div className="grid items-start gap-8 lg:grid-cols-5">
+      <div className="lg:col-span-2">
+        <BookForm onSubmit={addBook} />
+      </div>
 
-      <section aria-labelledby="list-title" className="space-y-4">
-        <div className="flex items-baseline justify-between">
-          <h2 id="list-title" className="text-lg font-semibold text-slate-800">
+      <section aria-labelledby="list-title" className="space-y-5 lg:col-span-3">
+        <div className="flex items-center justify-between">
+          <h2 id="list-title" className="text-xl font-semibold text-stone-900">
             Livros
           </h2>
-          <span className="text-sm text-slate-500" data-testid="book-counter">
+          <span
+            className="rounded-full bg-stone-200 px-3 py-1 text-sm font-medium text-stone-700"
+            data-testid="book-counter"
+          >
             {visibleBooks.length} de {books.length}
           </span>
         </div>

@@ -4,8 +4,8 @@ import { hasErrors, MAX_YEAR, MIN_YEAR, normalizeBook, validateBook } from "../u
 const INITIAL_VALUES = { title: "", author: "", year: "", pages: "", genre: "", price: "" };
 
 const FIELDS = [
-  { name: "title", label: "Título", type: "text", placeholder: "Dom Casmurro" },
-  { name: "author", label: "Autor", type: "text", placeholder: "Machado de Assis" },
+  { name: "title", label: "Título", type: "text", placeholder: "Dom Casmurro", wide: true },
+  { name: "author", label: "Autor", type: "text", placeholder: "Machado de Assis", wide: true },
   {
     name: "year",
     label: "Ano",
@@ -44,14 +44,20 @@ export default function BookForm({ onSubmit }) {
       onSubmit={handleSubmit}
       noValidate
       aria-label="Cadastrar livro"
-      className="space-y-4 rounded-lg bg-white p-6 shadow-sm"
+      className="space-y-5 rounded-xl border border-stone-200 bg-white p-6 lg:sticky lg:top-6"
     >
-      <h2 className="text-lg font-semibold text-slate-800">Cadastrar livro</h2>
+      <div className="border-l-4 border-emerald-500 pl-3">
+        <h2 className="text-lg font-semibold text-stone-900">Cadastrar livro</h2>
+        <p className="text-sm text-stone-500">Todos os campos são obrigatórios.</p>
+      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {FIELDS.map(({ name, label, type, ...extras }) => (
-          <div key={name} className="flex flex-col gap-1">
-            <label htmlFor={`book-${name}`} className="text-sm font-medium text-slate-700">
+      <div className="grid grid-cols-2 gap-4">
+        {FIELDS.map(({ name, label, type, wide, ...extras }) => (
+          <div key={name} className={`flex flex-col gap-1.5 ${wide ? "col-span-2" : ""}`}>
+            <label
+              htmlFor={`book-${name}`}
+              className="text-xs font-semibold uppercase tracking-wide text-stone-600"
+            >
               {label}
             </label>
             <input
@@ -62,11 +68,11 @@ export default function BookForm({ onSubmit }) {
               onChange={handleChange}
               aria-invalid={Boolean(errors[name])}
               aria-describedby={errors[name] ? `error-${name}` : undefined}
-              className="rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 aria-invalid:border-red-500"
+              className="rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-stone-900 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200 aria-invalid:border-rose-500 aria-invalid:bg-rose-50"
               {...extras}
             />
             {errors[name] && (
-              <p id={`error-${name}`} role="alert" className="text-sm text-red-600">
+              <p id={`error-${name}`} role="alert" className="text-xs font-medium text-rose-600">
                 {errors[name]}
               </p>
             )}
@@ -76,7 +82,7 @@ export default function BookForm({ onSubmit }) {
 
       <button
         type="submit"
-        className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+        className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700"
       >
         Cadastrar
       </button>
