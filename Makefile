@@ -2,13 +2,15 @@ PYTHON      ?= python
 POETRY      ?= $(shell $(PYTHON) -c "import shutil; print('poetry' if shutil.which('poetry') else '$(PYTHON) -m poetry')")
 COMPOSE     ?= docker compose
 BACKEND_DIR := backend
+FRONTEND_DIR := frontend
+NPM         ?= npm
 APP         := app.main:app
 HOST        ?= 0.0.0.0
 PORT        ?= 8000
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install run format lint test test-unit test-integration \n        migrate migration downgrade db-current build up up-build down logs shell db-shell
+.PHONY: help install run format lint test test-unit test-integration \n        migrate migration downgrade db-current build up up-build down logs shell db-shell \n        front-install front-dev front-build front-preview front-format front-lint \n        front-test front-test-unit front-test-integration front-e2e-install front-test-e2e
 
 help:
 	@echo "Alvos disponiveis:"
@@ -31,6 +33,17 @@ help:
 	@echo "  logs      Acompanha os logs dos servicos"
 	@echo "  shell     Abre um shell no container do backend"
 	@echo "  db-shell  Abre o psql no container do banco"
+	@echo "  front-install           Instala as dependencias do frontend (npm ci)"
+	@echo "  front-dev               Roda o Vite em http://localhost:5173"
+	@echo "  front-build             Gera o build de producao em frontend/dist"
+	@echo "  front-preview           Serve o build de producao localmente"
+	@echo "  front-format            Formata o codigo e organiza os imports com o Biome"
+	@echo "  front-lint              Verifica lint, formatacao e imports sem alterar arquivos"
+	@echo "  front-test              Roda os testes unitarios e de integracao (Vitest)"
+	@echo "  front-test-unit         Roda apenas os testes unitarios do frontend"
+	@echo "  front-test-integration  Roda apenas os testes de integracao do frontend"
+	@echo "  front-e2e-install       Instala o Chromium usado pelo Playwright"
+	@echo "  front-test-e2e          Roda os testes E2E (Playwright)"
 
 install:
 	cd $(BACKEND_DIR) && $(POETRY) install
@@ -87,3 +100,36 @@ shell:
 
 db-shell:
 	$(COMPOSE) exec db psql -U c216 -d c216
+
+front-install:
+	cd $(FRONTEND_DIR) && $(NPM) ci
+
+front-dev:
+	cd $(FRONTEND_DIR) && $(NPM) run dev
+
+front-build:
+	cd $(FRONTEND_DIR) && $(NPM) run build
+
+front-preview:
+	cd $(FRONTEND_DIR) && $(NPM) run preview
+
+front-format:
+	cd $(FRONTEND_DIR) && $(NPM) run format
+
+front-lint:
+	cd $(FRONTEND_DIR) && $(NPM) run check
+
+front-test:
+	cd $(FRONTEND_DIR) && $(NPM) run test
+
+front-test-unit:
+	cd $(FRONTEND_DIR) && $(NPM) run test:unit
+
+front-test-integration:
+	cd $(FRONTEND_DIR) && $(NPM) run test:integration
+
+front-e2e-install:
+	cd $(FRONTEND_DIR) && $(NPM) run test:e2e:install
+
+front-test-e2e:
+	cd $(FRONTEND_DIR) && $(NPM) run test:e2e
