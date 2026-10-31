@@ -119,6 +119,7 @@ Um livro tem os campos `title`, `author`, `year`, `pages`, `genre` e `price`.
 - `pratica-3`
 - `pratica-4`
 - `pratica-5`
+- `pratica-6`
 
 ## Qualidade de codigo
 
@@ -156,12 +157,72 @@ poetry run pytest tests/unit
 poetry run pytest -m integration
 ```
 
+## Frontend
+
+SPA em React com Vite, escrita em JavaScript e estilizada com Tailwind CSS v4 (plugin do Vite, sem `tailwind.config.js`). A tela gerencia livros com os mesmos campos e regras do backend: cadastrar, filtrar por autor e remover.
+
+Nesta pratica o estado e apenas local (`useState`): nao ha chamadas a API nem persistencia, entao a lista volta aos livros de exemplo ao recarregar a pagina.
+
+```
+frontend/
+├── src/
+│   ├── main.jsx           # monta o React no #root
+│   ├── App.jsx            # layout e livros de exemplo
+│   ├── index.css          # apenas @import "tailwindcss"
+│   ├── pages/             # BooksPage guarda o estado dos livros
+│   ├── components/        # formulario, lista e filtro
+│   └── utils/             # funcoes puras: validacao, filtro, formatacao e id
+├── tests/
+│   ├── unit/              # funcoes puras e componentes isolados (Vitest)
+│   ├── integration/       # formulario, filtro e lista juntos (Vitest + user-event)
+│   └── e2e/               # fluxos no navegador (Playwright)
+├── vite.config.js         # Vite, plugins e configuracao do Vitest
+├── playwright.config.js   # navegador, servidor e relatorio dos testes E2E
+└── biome.json             # regras de lint e formatacao
+```
+
+A validacao do formulario segue o `BookBase` do backend:
+
+- `title` de 1 a 200 caracteres, `author` de 1 a 100 e `genre` de 1 a 50;
+- `year` inteiro entre 1450 e 2100;
+- `pages` inteiro maior que zero;
+- `price` maior que zero.
+
+| Ferramenta                       | Papel                                 | Equivalente no backend |
+|----------------------------------|---------------------------------------|------------------------|
+| npm                              | Dependencias e scripts                | Poetry                 |
+| Biome                            | Lint, formatacao e ordem dos imports  | Ruff                   |
+| Vitest + Testing Library + jsdom | Testes unitarios e de integracao      | Pytest + TestClient    |
+| Playwright (Chromium)            | Testes E2E em navegador real          | -                      |
+
+Requer Node.js 22.12 ou superior.
+
+```bash
+make front-install           # npm ci
+make front-dev               # Vite em http://localhost:5173
+make front-build             # build de producao em frontend/dist
+make front-preview           # serve o build localmente
+make front-format            # biome check --write
+make front-lint              # biome check, sem alterar arquivos
+make front-test              # testes unitarios e de integracao
+make front-test-unit         # apenas os unitarios
+make front-test-integration  # apenas os de integracao
+make front-e2e-install       # instala o Chromium do Playwright
+make front-test-e2e          # testes E2E
+```
+
+O `include` do Vitest aponta so para `tests/unit` e `tests/integration`, para nao executar os `*.spec.js` do Playwright. O Playwright sobe o Vite sozinho e gera o relatorio em `frontend/playwright-report/`.
+
 ## Checklist antes do PR
 
 ```bash
 make format
 make lint
 make test
+make front-format
+make front-lint
+make front-test
+make front-test-e2e
 make up-build
 ```
 
@@ -171,3 +232,8 @@ O workflow `.github/workflows/ci-backend.yml` roda a cada `push` e `pull_request
 
 - `lint`: `ruff check .` e `ruff format --check .`;
 - `test`: sobe um PostgreSQL 16 como service container, roda os testes unitarios, aplica as migrations e roda os testes de integracao.
+
+O workflow `.github/workflows/ci-frontend.yml` roda quando algo em `frontend/` ou o proprio workflow muda, com dois jobs:
+
+- `lint`: `npm run check` (Biome);
+- `test`: depende do `lint` e roda os testes unitarios, os de integracao, o build e os testes E2E, publicando o relatorio do Playwright como artefato.
