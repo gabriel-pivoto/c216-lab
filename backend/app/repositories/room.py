@@ -1,11 +1,29 @@
+from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import Select, exists, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.domain.enums import ACTIVE_STATUSES
 from app.domain.errors import RoomNameConflictError
+from app.models.reservation import ReservationModel
 from app.models.room import ROOM_NAME_CONSTRAINT, RoomModel
+
+
+def _filtered(
+    query: Select,
+    kind: str | None,
+    min_capacity: int | None,
+    resources: list[str] | None,
+) -> Select:
+    if kind is not None:
+        query = query.where(RoomModel.kind == kind)
+    if min_capacity is not None:
+        query = query.where(RoomModel.capacity >= min_capacity)
+    if resources:
+        query = query.where(RoomModel.resources.contains(resources))
+    return query
 
 
 class RoomRepository:
@@ -18,14 +36,25 @@ class RoomRepository:
         min_capacity: int | None = None,
         resources: list[str] | None = None,
     ) -> list[RoomModel]:
-        query = select(RoomModel).order_by(RoomModel.name)
-        if kind is not None:
-            query = query.where(RoomModel.kind == kind)
-        if min_capacity is not None:
-            query = query.where(RoomModel.capacity >= min_capacity)
-        if resources:
-            query = query.where(RoomModel.resources.contains(resources))
-        return list(self.session.scalars(query))
+        query = _filtered(select(RoomModel), kind, min_capacity, resources)
+        return list(self.session.scalars(query.order_by(RoomModel.name)))
+
+    def list_available(
+        self,
+        starts_at: datetime,
+        ends_at: datetime,
+        kind: str | None = None,
+        min_capacity: int | None = None,
+        resources: list[str] | None = None,
+    ) -> list[RoomModel]:
+        occupied = exists().where(
+            ReservationModel.room_id == RoomModel.id,
+            ReservationModel.status.in_([status.value for status in ACTIVE_STATUSES]),
+            ReservationModel.starts_at < ends_at,
+            ReservationModel.ends_at > starts_at,
+        )
+        query = _filtered(select(RoomModel), kind, min_capacity, resources).where(~occupied)
+        return list(self.session.scalars(query.order_by(RoomModel.capacity, RoomModel.name)))
 
     def get(self, room_id: int) -> RoomModel | None:
         return self.session.get(RoomModel, room_id)

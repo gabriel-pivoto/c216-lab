@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, status
+from pydantic import NaiveDatetime
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
@@ -33,6 +34,22 @@ def list_rooms(
     ] = None,
 ) -> list[Room]:
     return service.list_rooms(kind=kind, min_capacity=min_capacity, resources=resource)
+
+
+@router.get("/available", response_model=list[Room])
+def list_available_rooms(
+    service: Service,
+    starts_at: Annotated[NaiveDatetime, Query(description="Start of the period")],
+    ends_at: Annotated[NaiveDatetime, Query(description="End of the period")],
+    attendees: Annotated[int | None, Query(gt=0, description="Number of attendees")] = None,
+    kind: Annotated[RoomKind | None, Query(description="Filter by room kind")] = None,
+    resource: Annotated[
+        list[RoomResource] | None, Query(description="Resources the room must have")
+    ] = None,
+) -> list[Room]:
+    return service.find_available(
+        starts_at, ends_at, attendees=attendees, kind=kind, resources=resource
+    )
 
 
 @router.get("/{room_id}", response_model=Room)

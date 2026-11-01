@@ -8,6 +8,7 @@ from app.domain.errors import (
     RoomHasFutureReservationsError,
     RoomNotFoundError,
 )
+from app.domain.reservation_rules import validate_period
 from app.models.room import RoomModel
 from app.repositories.reservation import ReservationRepository
 from app.repositories.room import RoomRepository
@@ -34,6 +35,24 @@ class RoomService:
         rooms = self.repository.list_all(
             kind=kind.value if kind else None,
             min_capacity=min_capacity,
+            resources=[resource.value for resource in resources or []],
+        )
+        return [Room.model_validate(room) for room in rooms]
+
+    def find_available(
+        self,
+        starts_at: datetime,
+        ends_at: datetime,
+        attendees: int | None = None,
+        kind: RoomKind | None = None,
+        resources: list[RoomResource] | None = None,
+    ) -> list[Room]:
+        validate_period(starts_at, ends_at, self.now())
+        rooms = self.repository.list_available(
+            starts_at,
+            ends_at,
+            kind=kind.value if kind else None,
+            min_capacity=attendees,
             resources=[resource.value for resource in resources or []],
         )
         return [Room.model_validate(room) for room in rooms]
