@@ -14,3 +14,13 @@ class RoomResource(StrEnum):
     AIR_CONDITIONING = "air_conditioning"
     WHITEBOARD = "whiteboard"
     VIDEO_CONFERENCE = "video_conference"
+
+
+class ReservationStatus(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+
+
+ACTIVE_STATUSES = (ReservationStatus.PENDING, ReservationStatus.APPROVED)
