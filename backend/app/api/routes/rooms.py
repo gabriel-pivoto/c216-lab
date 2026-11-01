@@ -5,13 +5,14 @@ from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.domain.enums import RoomKind, RoomResource
+from app.repositories.reservation import ReservationRepository
 from app.repositories.room import RoomRepository
 from app.schemas.room import MAX_CAPACITY, Room, RoomCreate, RoomUpdate
 from app.services.room import RoomService
 
 
 def get_room_service(db: Annotated[Session, Depends(get_db)]) -> RoomService:
-    return RoomService(RoomRepository(db))
+    return RoomService(RoomRepository(db), ReservationRepository(db))
 
 
 router = APIRouter(prefix="/rooms", tags=["rooms"])

@@ -30,6 +30,11 @@ class RoomRepository:
     def get(self, room_id: int) -> RoomModel | None:
         return self.session.get(RoomModel, room_id)
 
+    def get_for_update(self, room_id: int) -> RoomModel | None:
+        return self.session.scalar(
+            select(RoomModel).where(RoomModel.id == room_id).with_for_update()
+        )
+
     def create(self, data: dict[str, Any]) -> RoomModel:
         room = RoomModel(**data)
         self.session.add(room)
