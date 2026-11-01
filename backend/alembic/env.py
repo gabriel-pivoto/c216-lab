@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.database.base import Base
 from app.database.config import get_database_url
-from app.models import RoomModel  # noqa: F401
+from app.models import ReservationModel, RoomModel  # noqa: F401
 
 config = context.config
 
