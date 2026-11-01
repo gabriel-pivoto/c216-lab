@@ -2,6 +2,8 @@ PYTHON      ?= python
 POETRY      ?= $(shell $(PYTHON) -c "import shutil; print('poetry' if shutil.which('poetry') else '$(PYTHON) -m poetry')")
 COMPOSE     ?= docker compose
 BACKEND_DIR := backend
+FRONTEND_DIR := frontend
+NPM         ?= npm
 APP         := app.main:app
 HOST        ?= 0.0.0.0
 PORT        ?= 8000
@@ -9,7 +11,9 @@ PORT        ?= 8000
 .DEFAULT_GOAL := help
 
 .PHONY: help install run format lint test test-unit test-integration \
-        migrate migration downgrade db-current build up up-build down logs db-shell
+        migrate migration downgrade db-current build up up-build down down-volumes logs db-shell \
+        front-install front-dev front-build front-format front-lint front-test \
+        front-test-unit front-test-integration front-e2e-install front-test-e2e
 
 help:
 	@echo "Alvos disponiveis:"
@@ -28,9 +32,20 @@ help:
 	@echo "  build             Constroi as imagens do compose"
 	@echo "  up                Sobe os servicos do compose em segundo plano"
 	@echo "  up-build          Reconstroi as imagens e sobe os servicos"
-	@echo "  down              Derruba os servicos do compose"
+	@echo "  down              Derruba os servicos do compose, mantendo os dados"
+	@echo "  down-volumes      Derruba os servicos e apaga os dados do banco"
 	@echo "  logs              Acompanha os logs dos servicos"
 	@echo "  db-shell          Abre o psql no container do banco"
+	@echo "  front-install           Instala as dependencias do frontend"
+	@echo "  front-dev               Roda o Vite em http://localhost:5173"
+	@echo "  front-build             Gera o build de producao em frontend/dist"
+	@echo "  front-format            Formata o codigo e organiza os imports com o Biome"
+	@echo "  front-lint              Verifica lint, formatacao e imports sem alterar arquivos"
+	@echo "  front-test              Roda os testes unitarios e de integracao (Vitest)"
+	@echo "  front-test-unit         Roda apenas os testes unitarios do frontend"
+	@echo "  front-test-integration  Roda apenas os testes de integracao do frontend"
+	@echo "  front-e2e-install       Instala o Chromium usado pelo Playwright"
+	@echo "  front-test-e2e          Roda os testes E2E (exige a aplicacao no ar: make up-build)"
 
 install:
 	cd $(BACKEND_DIR) && $(POETRY) install
@@ -79,8 +94,41 @@ up-build:
 down:
 	$(COMPOSE) down
 
+down-volumes:
+	$(COMPOSE) down -v
+
 logs:
 	$(COMPOSE) logs -f
 
 db-shell:
 	$(COMPOSE) exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
+
+front-install:
+	cd $(FRONTEND_DIR) && $(NPM) ci
+
+front-dev:
+	cd $(FRONTEND_DIR) && $(NPM) run dev
+
+front-build:
+	cd $(FRONTEND_DIR) && $(NPM) run build
+
+front-format:
+	cd $(FRONTEND_DIR) && $(NPM) run format
+
+front-lint:
+	cd $(FRONTEND_DIR) && $(NPM) run check
+
+front-test:
+	cd $(FRONTEND_DIR) && $(NPM) run test
+
+front-test-unit:
+	cd $(FRONTEND_DIR) && $(NPM) run test:unit
+
+front-test-integration:
+	cd $(FRONTEND_DIR) && $(NPM) run test:integration
+
+front-e2e-install:
+	cd $(FRONTEND_DIR) && $(NPM) run test:e2e:install
+
+front-test-e2e:
+	cd $(FRONTEND_DIR) && $(NPM) run test:e2e
