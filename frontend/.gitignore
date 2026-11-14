@@ -6,3 +6,5 @@ blob-report/
 playwright/.cache/
 npm-debug.log*
 *.log
+.env
+.env.local
