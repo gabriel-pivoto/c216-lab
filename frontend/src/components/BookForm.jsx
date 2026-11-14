@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { toFormValues } from "../utils/books.js";
 import { hasErrors, MAX_YEAR, MIN_YEAR, normalizeBook, validateBook } from "../utils/validation.js";
 
-const INITIAL_VALUES = { title: "", author: "", year: "", pages: "", genre: "", price: "" };
+const EMPTY_VALUES = { title: "", author: "", year: "", pages: "", genre: "", price: "" };
 
 const FIELDS = [
   { name: "title", label: "Título", type: "text", placeholder: "Dom Casmurro", wide: true },
@@ -19,8 +20,9 @@ const FIELDS = [
   { name: "price", label: "Preço (R$)", type: "number", placeholder: "39.90", step: "0.01" },
 ];
 
-export default function BookForm({ onSubmit }) {
-  const [values, setValues] = useState(INITIAL_VALUES);
+export default function BookForm({ book = null, onSubmit, onCancel, submitting = false }) {
+  const editing = book !== null;
+  const [values, setValues] = useState(editing ? toFormValues(book) : EMPTY_VALUES);
   const [errors, setErrors] = useState({});
 
   function handleChange(event) {
@@ -28,27 +30,33 @@ export default function BookForm({ onSubmit }) {
     setValues((previous) => ({ ...previous, [name]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const newErrors = validateBook(values);
     setErrors(newErrors);
     if (hasErrors(newErrors)) {
       return;
     }
-    onSubmit(normalizeBook(values));
-    setValues(INITIAL_VALUES);
+    const saved = await onSubmit(normalizeBook(values));
+    if (saved && !editing) {
+      setValues(EMPTY_VALUES);
+    }
   }
+
+  const title = editing ? "Editar livro" : "Cadastrar livro";
 
   return (
     <form
       onSubmit={handleSubmit}
       noValidate
-      aria-label="Cadastrar livro"
+      aria-label={editing ? `Editar ${book.title}` : "Cadastrar livro"}
       className="space-y-5 rounded-xl border border-stone-200 bg-white p-6 lg:sticky lg:top-6"
     >
-      <div className="border-l-4 border-emerald-500 pl-3">
-        <h2 className="text-lg font-semibold text-stone-900">Cadastrar livro</h2>
-        <p className="text-sm text-stone-500">Todos os campos são obrigatórios.</p>
+      <div className={`border-l-4 pl-3 ${editing ? "border-amber-500" : "border-emerald-500"}`}>
+        <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
+        <p className="text-sm text-stone-500">
+          {editing ? `Alterando o livro #${book.id}.` : "Todos os campos são obrigatórios."}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -80,12 +88,24 @@ export default function BookForm({ onSubmit }) {
         ))}
       </div>
 
-      <button
-        type="submit"
-        className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700"
-      >
-        Cadastrar
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+        >
+          {editing ? "Salvar alterações" : "Cadastrar"}
+        </button>
+        {editing && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-lg px-4 py-2.5 font-medium text-stone-600 transition-colors hover:bg-stone-100"
+          >
+            Cancelar
+          </button>
+        )}
+      </div>
     </form>
   );
 }
