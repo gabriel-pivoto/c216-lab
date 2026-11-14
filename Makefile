@@ -10,7 +10,7 @@ PORT        ?= 8000
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install run format lint test test-unit test-integration \n        migrate migration downgrade db-current build up up-build down logs shell db-shell \n        front-install front-dev front-build front-preview front-format front-lint \n        front-test front-test-unit front-test-integration front-e2e-install front-test-e2e
+.PHONY: help install run format lint test test-unit test-integration test-all         migrate migration downgrade db-current build up up-build down logs shell db-shell         front-install front-dev front-build front-preview front-format front-lint         front-test front-test-unit front-test-integration front-e2e-install front-test-e2e
 
 help:
 	@echo "Alvos disponiveis:"
@@ -22,12 +22,13 @@ help:
 	@echo "  test      Roda os testes com o pytest (exige o PostgreSQL: make up)"
 	@echo "  test-unit         Roda apenas os testes unitarios"
 	@echo "  test-integration  Roda apenas os testes de integracao (exige o PostgreSQL)"
+	@echo "  test-all          Sobe a stack e roda backend, frontend e E2E"
 	@echo "  migrate           Aplica as migrations pendentes (alembic upgrade head)"
 	@echo "  migration M=msg   Gera uma migration a partir dos modelos ORM"
 	@echo "  downgrade         Desfaz a ultima migration"
 	@echo "  db-current        Mostra a revisao atual do banco"
 	@echo "  build     Constroi as imagens do compose"
-	@echo "  up        Sobe os servicos do compose em segundo plano"
+	@echo "  up        Sobe PostgreSQL, API (8000) e frontend (5173) em segundo plano"
 	@echo "  up-build  Reconstroi as imagens e sobe os servicos"
 	@echo "  down      Derruba os servicos do compose"
 	@echo "  logs      Acompanha os logs dos servicos"
@@ -43,7 +44,7 @@ help:
 	@echo "  front-test-unit         Roda apenas os testes unitarios do frontend"
 	@echo "  front-test-integration  Roda apenas os testes de integracao do frontend"
 	@echo "  front-e2e-install       Instala o Chromium usado pelo Playwright"
-	@echo "  front-test-e2e          Roda os testes E2E (Playwright)"
+	@echo "  front-test-e2e          Roda os testes E2E (Playwright, contra a API real)"
 
 install:
 	cd $(BACKEND_DIR) && $(POETRY) install
@@ -67,6 +68,12 @@ test-unit:
 
 test-integration:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest tests/integration
+
+test-all:
+	$(COMPOSE) up -d --build --wait
+	$(MAKE) test
+	$(MAKE) front-test
+	$(MAKE) front-test-e2e
 
 migrate:
 	cd $(BACKEND_DIR) && $(POETRY) run alembic upgrade head

@@ -47,7 +47,7 @@ function validatePages(value) {
   return null;
 }
 
-function validatePrice(value) {
+export function validatePrice(value) {
   const text = String(value ?? "").trim();
   if (text === "") {
     return "Preço é obrigatório.";

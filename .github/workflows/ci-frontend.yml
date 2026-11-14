@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "frontend/**"
+      - "backend/**"
       - ".github/workflows/ci-frontend.yml"
   pull_request:
     paths:
       - "frontend/**"
+      - "backend/**"
       - ".github/workflows/ci-frontend.yml"
 
 jobs:
@@ -36,6 +38,27 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: lint
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: c216
+          POSTGRES_PASSWORD: c216
+          POSTGRES_DB: c216_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U c216 -d c216_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://c216:c216@localhost:5432/c216_e2e
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      VITE_API_URL: http://localhost:8000
+
     defaults:
       run:
         working-directory: frontend
@@ -61,6 +84,22 @@ jobs:
 
       - name: Gera o build de producao
         run: npm run build
+
+      - name: Configura o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instala o Poetry
+        run: pipx install poetry
+
+      - name: Instala as dependencias do backend
+        working-directory: backend
+        run: poetry install --no-root --without dev
+
+      - name: Aplica as migrations no banco do E2E
+        working-directory: backend
+        run: poetry run alembic upgrade head
 
       - name: Instala o Chromium do Playwright
         run: npx playwright install --with-deps chromium

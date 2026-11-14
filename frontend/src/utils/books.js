@@ -7,14 +7,13 @@ export function formatPrice(price) {
   return priceFormatter.format(price);
 }
 
-export function filterByAuthor(books, term) {
-  const search = term.trim().toLowerCase();
-  if (search === "") {
-    return books;
-  }
-  return books.filter((book) => book.author.toLowerCase().includes(search));
-}
-
-export function nextId(books) {
-  return books.reduce((highest, book) => Math.max(highest, book.id), 0) + 1;
+export function toFormValues(book) {
+  return {
+    title: book.title,
+    author: book.author,
+    year: String(book.year),
+    pages: String(book.pages),
+    genre: book.genre,
+    price: String(book.price),
+  };
 }

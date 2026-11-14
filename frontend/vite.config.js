@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    watch: process.env.VITE_WATCH_POLLING === "true" ? { usePolling: true, interval: 300 } : {},
   },
   test: {
     environment: "jsdom",

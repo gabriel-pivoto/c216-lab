@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 5173;
 const BASE_URL = `http://localhost:${PORT}`;
+const API_URL = (process.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 const isCI = Boolean(process.env.CI);
 
 export default defineConfig({
@@ -23,10 +24,19 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: BASE_URL,
-    reuseExistingServer: !isCI,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: "poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000",
+      cwd: "../backend",
+      url: `${API_URL}/`,
+      reuseExistingServer: !isCI,
+      timeout: 60_000,
+    },
+    {
+      command: "npm run dev",
+      url: BASE_URL,
+      reuseExistingServer: !isCI,
+      timeout: 60_000,
+    },
+  ],
 });
