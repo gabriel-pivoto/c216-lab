@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const DEFAULT_API_URL = "http://localhost:8000";
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -19,7 +19,8 @@ function describeDetail(detail) {
 }
 
 function buildUrl(path, params = {}) {
-  const url = new URL(path, API_URL);
+  const base = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/+$/, "");
+  const url = new URL(`${base}${path}`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     for (const item of [value].flat()) {
       if (item !== undefined && item !== null && item !== "") {

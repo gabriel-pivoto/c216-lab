@@ -58,3 +58,26 @@ describe("request", () => {
     await expect(request("/rooms")).rejects.toThrow("Não foi possível conectar à API");
   });
 });
+
+describe("API base URL", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("keeps a path prefix in the configured URL", async () => {
+    vi.stubEnv("VITE_API_URL", "http://api.example/api/");
+    const calls = mockApi({ "GET /api/rooms": [200, []] });
+
+    await request("/rooms");
+
+    expect(calls[0].pathname).toBe("/api/rooms");
+  });
+
+  it("accepts a relative URL served by the same origin", async () => {
+    vi.stubEnv("VITE_API_URL", "/api");
+    const calls = mockApi({ "GET /api/rooms": [200, []] });
+
+    await expect(request("/rooms")).resolves.toEqual([]);
+    expect(calls[0].pathname).toBe("/api/rooms");
+  });
+});
