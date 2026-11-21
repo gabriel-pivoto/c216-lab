@@ -31,6 +31,9 @@ describe("DashboardPage", () => {
     expect(await screen.findByText("12.5%")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Aula de redes" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Laboratório 3" })).toBeInTheDocument();
+    const pendingCall = calls.find((call) => call.pathname === "/reservations");
+    expect(pendingCall.searchParams.get("upcoming")).toBe("true");
+    expect(pendingCall.searchParams.has("date_from")).toBe(false);
     expect(calls.find((call) => call.pathname === "/reservations").searchParams.get("status")).toBe(
       "pending",
     );

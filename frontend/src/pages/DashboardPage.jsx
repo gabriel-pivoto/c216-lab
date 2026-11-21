@@ -5,7 +5,6 @@ import { listRooms } from "../api/rooms.js";
 import { EmptyState, Loading, Notice } from "../components/Feedback.jsx";
 import ReservationItem from "../components/ReservationItem.jsx";
 import { useResource } from "../hooks/useResource.js";
-import { toDateInput } from "../utils/datetime.js";
 
 const PENDING_LIMIT = 5;
 
@@ -14,7 +13,7 @@ function loadDashboard() {
     getDashboardSummary(),
     listReservations({
       status: "pending",
-      date_from: toDateInput(new Date()),
+      upcoming: true,
       limit: PENDING_LIMIT,
     }),
     listRooms(),
