@@ -167,3 +167,33 @@ describe("RoomsPage", () => {
     await waitFor(() => expect(calls.at(-1).searchParams.get("kind")).toBe("laboratory"));
   });
 });
+
+describe("RoomsPage capacity filter", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each(["1.5", "1001"])("does not send the invalid capacity %s", async (value) => {
+    const user = userEvent.setup();
+    const calls = mockApi({ "GET /rooms": [200, []] });
+    render(<RoomsPage />);
+    await screen.findByText("Nenhuma sala encontrada.");
+
+    await user.type(screen.getByLabelText("Capacidade mínima"), value);
+
+    expect(screen.getByText("Informe um número inteiro de 1 a 1000.")).toBeInTheDocument();
+    expect(calls.some((call) => call.searchParams.get("min_capacity") === value)).toBe(false);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("sends a valid capacity", async () => {
+    const user = userEvent.setup();
+    const calls = mockApi({ "GET /rooms": [200, []] });
+    render(<RoomsPage />);
+    await screen.findByText("Nenhuma sala encontrada.");
+
+    await user.type(screen.getByLabelText("Capacidade mínima"), "25");
+
+    await waitFor(() => expect(calls.at(-1).searchParams.get("min_capacity")).toBe("25"));
+  });
+});

@@ -6,6 +6,7 @@ import RoomCard from "../components/RoomCard.jsx";
 import RoomForm from "../components/RoomForm.jsx";
 import { useResource } from "../hooks/useResource.js";
 import { ROOM_KINDS } from "../utils/labels.js";
+import { isIntegerBetween, MAX_ROOM_CAPACITY } from "../utils/validation.js";
 
 export default function RoomsPage() {
   const [kind, setKind] = useState("");
@@ -13,9 +14,12 @@ export default function RoomsPage() {
   const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState(null);
 
+  const capacityIsValid = minCapacity === "" || isIntegerBetween(minCapacity, 1, MAX_ROOM_CAPACITY);
+  const appliedCapacity = capacityIsValid ? minCapacity : "";
+
   const loader = useCallback(
-    () => listRooms({ kind, min_capacity: Number(minCapacity) > 0 ? minCapacity : "" }),
-    [kind, minCapacity],
+    () => listRooms({ kind, min_capacity: appliedCapacity }),
+    [kind, appliedCapacity],
   );
   const { data: rooms, error, loading, reload } = useResource(loader);
 
@@ -73,11 +77,18 @@ export default function RoomsPage() {
               ))}
             </select>
           </Field>
-          <Field id="filter-capacity" label="Capacidade mínima">
+          <Field
+            id="filter-capacity"
+            label="Capacidade mínima"
+            error={
+              capacityIsValid ? null : `Informe um número inteiro de 1 a ${MAX_ROOM_CAPACITY}.`
+            }
+          >
             <input
               id="filter-capacity"
               type="number"
               min="1"
+              max={MAX_ROOM_CAPACITY}
               className="field-input"
               value={minCapacity}
               onChange={(event) => setMinCapacity(event.target.value)}

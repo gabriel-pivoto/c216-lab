@@ -10,7 +10,7 @@ export function hasErrors(errors) {
   return Object.keys(errors).length > 0;
 }
 
-function isIntegerBetween(value, min, max) {
+export function isIntegerBetween(value, min, max) {
   const number = Number(value);
   return value !== "" && Number.isInteger(number) && number >= min && number <= max;
 }
