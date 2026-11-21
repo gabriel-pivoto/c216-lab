@@ -44,6 +44,7 @@ export default function ReservationsPage({ prefill }) {
   const [email, setEmail] = useState("");
   const [showPast, setShowPast] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [draft, setDraft] = useState(prefill ?? null);
   const [notice, setNotice] = useState(null);
 
   const roomsResource = useResource(useCallback(() => listRooms(), []));
@@ -74,6 +75,7 @@ export default function ReservationsPage({ prefill }) {
       await createReservation(values);
       setNotice({ type: "success", text: "Reserva criada e aguardando aprovação." });
     }
+    setDraft(null);
     reload();
   }
 
@@ -96,6 +98,7 @@ export default function ReservationsPage({ prefill }) {
 
   async function handleAction(action, reservation) {
     if (action === "edit") {
+      setDraft(null);
       setEditing(reservation);
       return;
     }
@@ -122,7 +125,7 @@ export default function ReservationsPage({ prefill }) {
       <ReservationForm
         key={editing?.id ?? "new"}
         rooms={rooms}
-        initial={editing ? toFormValues(editing) : prefill}
+        initial={editing ? toFormValues(editing) : draft}
         editing={Boolean(editing)}
         onSubmit={handleSubmit}
         onCancel={() => setEditing(null)}

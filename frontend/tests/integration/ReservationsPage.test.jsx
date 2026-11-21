@@ -177,4 +177,20 @@ describe("ReservationsPage period and prefill", () => {
 
     await waitFor(() => expect(listings().at(-1).searchParams.has("date_from")).toBe(false));
   });
+
+  it("drops the search prefill after editing another reservation", async () => {
+    const user = userEvent.setup();
+    await renderPage(
+      { "GET /reservations": [200, [RESERVATION]] },
+      { prefill: { room_id: "1", date: "2031-01-06", start_time: "09:00", end_time: "10:00" } },
+    );
+    await waitFor(() => expect(screen.getByLabelText("Data")).toHaveValue("2031-01-06"));
+
+    await user.click(await screen.findByRole("button", { name: "Editar" }));
+    await user.click(screen.getByRole("button", { name: "Cancelar edição" }));
+
+    expect(screen.getByRole("form", { name: "Nova reserva" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Data")).toHaveValue("");
+    expect(screen.getByLabelText("Início")).toHaveValue("");
+  });
 });
