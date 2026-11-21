@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ReservationsPage from "../../src/pages/ReservationsPage.jsx";
+import { toDateInput } from "../../src/utils/datetime.js";
 import { mockApi, RESERVATION, ROOM } from "../helpers/mockApi.js";
 
 afterEach(() => {
@@ -156,5 +157,24 @@ describe("ReservationsPage", () => {
     await user.selectOptions(screen.getByLabelText("Status"), "approved");
 
     await waitFor(() => expect(calls.at(-1).searchParams.get("status")).toBe("approved"));
+  });
+});
+
+describe("ReservationsPage period and prefill", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("lists from today by default and can include past days", async () => {
+    const user = userEvent.setup();
+    const calls = await renderPage({ "GET /reservations": [200, []] });
+    const today = toDateInput(new Date());
+    const listings = () => calls.filter((call) => call.pathname === "/reservations");
+
+    await waitFor(() => expect(listings().at(-1).searchParams.get("date_from")).toBe(today));
+
+    await user.click(screen.getByLabelText("Incluir reservas de dias anteriores"));
+
+    await waitFor(() => expect(listings().at(-1).searchParams.has("date_from")).toBe(false));
   });
 });

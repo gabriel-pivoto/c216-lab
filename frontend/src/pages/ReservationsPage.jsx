@@ -14,7 +14,7 @@ import Field from "../components/Field.jsx";
 import ReservationForm from "../components/ReservationForm.jsx";
 import ReservationItem from "../components/ReservationItem.jsx";
 import { useResource } from "../hooks/useResource.js";
-import { splitDateTime } from "../utils/datetime.js";
+import { splitDateTime, toDateInput } from "../utils/datetime.js";
 import { RESERVATION_STATUS } from "../utils/labels.js";
 
 const SUCCESS_MESSAGES = {
@@ -42,13 +42,20 @@ export default function ReservationsPage({ prefill }) {
   const [roomId, setRoomId] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [email, setEmail] = useState("");
+  const [showPast, setShowPast] = useState(false);
   const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState(null);
 
   const roomsResource = useResource(useCallback(() => listRooms(), []));
   const reservationsLoader = useCallback(
-    () => listReservations({ status, room_id: roomId, requester_email: email }),
-    [status, roomId, email],
+    () =>
+      listReservations({
+        status,
+        room_id: roomId,
+        requester_email: email,
+        date_from: showPast ? "" : toDateInput(new Date()),
+      }),
+    [status, roomId, email, showPast],
   );
   const { data: reservations, error, loading, reload } = useResource(reservationsLoader);
 
@@ -165,6 +172,14 @@ export default function ReservationsPage({ prefill }) {
           <button type="submit" className="btn-secondary">
             Filtrar
           </button>
+          <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-4">
+            <input
+              type="checkbox"
+              checked={showPast}
+              onChange={(event) => setShowPast(event.target.checked)}
+            />
+            Incluir reservas de dias anteriores
+          </label>
         </form>
 
         <Notice notice={notice} />
