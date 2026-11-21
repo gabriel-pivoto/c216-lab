@@ -3,3 +3,5 @@ __pycache__/
 .venv/
 .env
 .vscode/
+.ruff_cache/
+.pytest_cache/

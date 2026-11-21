@@ -1,14 +1,20 @@
 [project]
-name = "c216-lab-backend"
+name = "salacerta-backend"
 version = "0.1.0"
-description = "Backend do laboratorio de C216"
+description = "API do SalaCerta, sistema de reserva de salas e laboratorios"
 authors = [
     {name = "Gabriel Pivoto", email = "gabrielspivoto@gmail.com"}
 ]
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
-    "uvicorn[standard] (>=0.52.4,<0.53.0)"
+    "uvicorn[standard] (>=0.52.4,<0.53.0)",
+    "sqlalchemy (>=2.0,<3.0)",
+    "psycopg[binary] (>=3.2,<4.0)",
+    "alembic (>=1.14,<2.0)",
+    "python-dotenv (>=1.0,<2.0)",
+    "email-validator (>=2.2,<3.0)",
+    "tzdata (>=2025.1)"
 ]
 
 [build-system]
@@ -17,3 +23,27 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+httpx = "^0.28.1"
+ruff = "^0.17.0"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "unit: unit tests (no HTTP layer and no database)",
+    "integration: integration tests against a real PostgreSQL",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-third-party = ["alembic"]

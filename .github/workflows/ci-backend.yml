@@ -1,0 +1,86 @@
+name: CI Backend
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configura o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instala o Poetry
+        run: pipx install poetry
+
+      - name: Instala as dependencias
+        run: poetry install
+
+      - name: Verifica o lint
+        run: poetry run ruff check .
+
+      - name: Verifica a formatacao
+        run: poetry run ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: salacerta
+          POSTGRES_PASSWORD: salacerta
+          POSTGRES_DB: salacerta_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salacerta -d salacerta_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://salacerta:salacerta@localhost:5432/salacerta_test
+      TEST_DATABASE_URL: postgresql+psycopg://salacerta:salacerta@localhost:5432/salacerta_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configura o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instala o Poetry
+        run: pipx install poetry
+
+      - name: Instala as dependencias
+        run: poetry install
+
+      - name: Roda os testes unitarios
+        run: poetry run pytest -v tests/unit
+
+      - name: Aplica as migrations
+        run: poetry run alembic upgrade head
+
+      - name: Roda os testes de integracao
+        run: poetry run pytest -v tests/integration
