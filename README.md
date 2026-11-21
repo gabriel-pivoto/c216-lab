@@ -11,10 +11,10 @@ Instituições com salas compartilhadas costumam controlar reservas em planilhas
 ## Funcionalidades
 
 - **Salas:** cadastro, consulta, edição e exclusão, com tipo, localização, capacidade e recursos, além de filtros.
-- **Reservas:** cadastro, consulta, edição e exclusão, com filtros por status, sala e e-mail do solicitante.
+- **Reservas:** cadastro, consulta, edição e exclusão, com filtros por status, sala e e-mail do solicitante. A lista mostra as reservas a partir de hoje, com opção de incluir os dias anteriores.
 - **Aprovação:** a reserva nasce pendente e pode ser aprovada, rejeitada ou cancelada.
 - **Salas livres:** busca por período, participantes, tipo e recursos, com atalho para reservar a sala encontrada.
-- **Reservas semanais:** repete uma reserva por 2 a 12 semanas. Se uma das datas tiver conflito, nenhuma é criada. A série pode ser cancelada de uma vez.
+- **Reservas semanais:** repete uma reserva por 2 a 12 semanas. Se uma das datas tiver conflito, nenhuma é criada. A série pode ser cancelada de uma vez, e o cancelamento retorna 409 quando não sobra nenhuma reserva futura ativa nela.
 - **Agenda semanal:** grade por sala, com navegação entre semanas.
 - **Painel:** reservas pendentes, reservas do dia, ocupação do dia e salas mais usadas, com aprovação direta.
 
@@ -182,7 +182,7 @@ make front-lint    # Biome: verifica sem alterar
 | GET, POST | `/rooms` | Lista (filtros `kind`, `min_capacity`, `resource`) e cria salas |
 | GET | `/rooms/available` | Salas livres (`starts_at`, `ends_at`, `attendees`, `kind`, `resource`) |
 | GET, PUT, DELETE | `/rooms/{id}` | Consulta, substitui e exclui uma sala |
-| GET, POST | `/reservations` | Lista (filtros `room_id`, `status`, `requester_email`, `date_from`, `date_to`, `limit`) e cria reservas |
+| GET, POST | `/reservations` | Lista (filtros `room_id`, `status`, `requester_email`, `date_from`, `date_to`, `upcoming`, `limit`) e cria reservas |
 | POST | `/reservations/recurring` | Cria uma série semanal |
 | POST | `/reservations/series/{id}/cancel` | Cancela as próximas reservas ativas da série |
 | GET, PUT, DELETE | `/reservations/{id}` | Consulta, substitui e exclui uma reserva |
