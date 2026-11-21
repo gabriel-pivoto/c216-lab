@@ -75,4 +75,3 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_reservations_requester_email"), table_name="reservations")
     op.drop_table("reservations")
     # ### end Alembic commands ###
-    op.execute("DROP EXTENSION IF EXISTS btree_gist")
