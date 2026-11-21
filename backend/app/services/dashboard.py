@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from app.domain.clock import local_now
 from app.domain.reservation_rules import CLOSING_TIME, OPENING_TIME
@@ -8,7 +8,14 @@ from app.schemas.dashboard import BusyRoom, DashboardSummary
 
 BUSIEST_ROOMS_LIMIT = 5
 BUSIEST_ROOMS_WINDOW = timedelta(days=30)
-OPEN_HOURS_PER_DAY = CLOSING_TIME.hour - OPENING_TIME.hour
+
+
+def open_hours(opening: time, closing: time) -> float:
+    duration = datetime.combine(date.min, closing) - datetime.combine(date.min, opening)
+    return duration.total_seconds() / 3600
+
+
+OPEN_HOURS_PER_DAY = open_hours(OPENING_TIME, CLOSING_TIME)
 
 
 class DashboardService:
