@@ -10,6 +10,7 @@ from app.domain.errors import (
     ReservationNotFoundError,
     RoomNotFoundError,
     SeriesNotFoundError,
+    SeriesNothingToCancelError,
 )
 from app.models.reservation import ReservationModel
 from app.models.room import RoomModel
@@ -123,6 +124,8 @@ class ReservationService:
             if ReservationStatus(reservation.status) in ACTIVE_STATUSES
             and reservation.starts_at > now
         ]
+        if not cancellable:
+            raise SeriesNothingToCancelError
         self.reservations.update_status(cancellable, ReservationStatus.CANCELLED.value)
         return [Reservation.model_validate(reservation) for reservation in reservations]
 

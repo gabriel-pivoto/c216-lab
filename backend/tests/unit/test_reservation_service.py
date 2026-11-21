@@ -4,7 +4,11 @@ from uuid import uuid4
 
 import pytest
 
-from app.domain.errors import BusinessRuleError, SeriesNotFoundError
+from app.domain.errors import (
+    BusinessRuleError,
+    SeriesNotFoundError,
+    SeriesNothingToCancelError,
+)
 from app.services.reservation import ReservationService
 
 NOW = datetime(2026, 11, 10, 12, 0)
@@ -78,6 +82,17 @@ def test_approve_uses_the_injected_clock() -> None:
         build_service([reservation]).approve(1)
 
     assert reservation.status == "pending"
+
+
+def test_cancel_series_with_nothing_active_raises_conflict() -> None:
+    started = build_reservation(NOW, status="approved")
+    cancelled = build_reservation(NOW + timedelta(days=7), status="cancelled")
+    service = build_service([started, cancelled])
+
+    with pytest.raises(SeriesNothingToCancelError):
+        service.cancel_series(uuid4())
+
+    assert started.status == "approved"
 
 
 def test_upcoming_filter_uses_the_injected_clock() -> None:

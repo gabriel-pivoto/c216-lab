@@ -323,3 +323,16 @@ def test_upcoming_hides_reservations_that_already_started(
 
     assert len(all_items) == 2
     assert [item["id"] for item in upcoming] == [future["id"]]
+
+
+def test_cancel_series_without_active_reservations_returns_409(
+    client: TestClient, payload: dict
+) -> None:
+    series = client.post("/reservations/recurring", json={**payload, "weeks": 2}).json()
+    series_id = series[0]["series_id"]
+    client.post(f"/reservations/series/{series_id}/cancel")
+
+    response = client.post(f"/reservations/series/{series_id}/cancel")
+
+    assert response.status_code == 409
+    assert "não tem reservas futuras ativas" in response.json()["detail"]

@@ -56,6 +56,11 @@ class SeriesNotFoundError(NotFoundError):
         self.series_id = series_id
 
 
+class SeriesNothingToCancelError(ConflictError):
+    def __init__(self) -> None:
+        super().__init__("A série não tem reservas futuras ativas para cancelar.")
+
+
 class ReservationConflictError(ConflictError):
     def __init__(self, periods: list[tuple[datetime, datetime]] | None = None) -> None:
         if periods:
