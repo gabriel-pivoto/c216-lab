@@ -4,8 +4,10 @@ from threading import Barrier
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.domain.clock import local_now
+from app.repositories.reservation import ReservationRepository
 from tests.support import iso, next_week_at
 
 pytestmark = pytest.mark.usefixtures("database")
@@ -300,3 +302,24 @@ def test_capacity_cannot_drop_below_a_future_reservation(
 
     assert below.status_code == 409
     assert equal.status_code == 200
+
+
+def test_upcoming_hides_reservations_that_already_started(
+    client: TestClient, payload: dict, db_session: Session, room: dict
+) -> None:
+    started = local_now() - timedelta(minutes=30)
+    ReservationRepository(db_session).create(
+        {
+            **payload,
+            "starts_at": started,
+            "ends_at": started + timedelta(hours=1),
+            "status": "pending",
+        }
+    )
+    future = create(client, payload)
+
+    all_items = client.get("/reservations").json()
+    upcoming = client.get("/reservations", params={"upcoming": "true"}).json()
+
+    assert len(all_items) == 2
+    assert [item["id"] for item in upcoming] == [future["id"]]

@@ -78,3 +78,20 @@ def test_approve_uses_the_injected_clock() -> None:
         build_service([reservation]).approve(1)
 
     assert reservation.status == "pending"
+
+
+def test_upcoming_filter_uses_the_injected_clock() -> None:
+    class RecordingRepository:
+        filters: dict = {}
+
+        def list_all(self, **filters):
+            RecordingRepository.filters = filters
+            return []
+
+    service = ReservationService(RecordingRepository(), None, now=lambda: NOW)
+
+    service.list_reservations(upcoming=True)
+    assert RecordingRepository.filters["starts_after"] == NOW
+
+    service.list_reservations()
+    assert RecordingRepository.filters["starts_after"] is None

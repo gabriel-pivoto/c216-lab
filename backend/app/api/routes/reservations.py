@@ -41,6 +41,7 @@ def list_reservations(
     ] = None,
     date_from: Annotated[date | None, Query(description="First day, inclusive")] = None,
     date_to: Annotated[date | None, Query(description="Last day, inclusive")] = None,
+    upcoming: Annotated[bool, Query(description="Only reservations not started yet")] = False,
     limit: Annotated[int, Query(ge=1, le=500, description="Maximum number of items")] = 200,
 ) -> list[Reservation]:
     return service.list_reservations(
@@ -49,6 +50,7 @@ def list_reservations(
         requester_email=requester_email,
         date_from=date_from,
         date_to=date_to,
+        upcoming=upcoming,
         limit=limit,
     )
 

@@ -41,6 +41,7 @@ class ReservationService:
         requester_email: str | None = None,
         date_from: date | None = None,
         date_to: date | None = None,
+        upcoming: bool = False,
         limit: int = 200,
     ) -> list[Reservation]:
         reservations = self.reservations.list_all(
@@ -49,6 +50,7 @@ class ReservationService:
             requester_email=requester_email,
             date_from=date_from,
             date_to=date_to,
+            starts_after=self.now() if upcoming else None,
             limit=limit,
         )
         return [Reservation.model_validate(reservation) for reservation in reservations]

@@ -25,6 +25,7 @@ class ReservationRepository:
         requester_email: str | None = None,
         date_from: date | None = None,
         date_to: date | None = None,
+        starts_after: datetime | None = None,
         limit: int = 200,
     ) -> list[ReservationModel]:
         query = select(ReservationModel).order_by(ReservationModel.starts_at).limit(limit)
@@ -39,6 +40,8 @@ class ReservationRepository:
         if date_to is not None:
             next_day = datetime.combine(date_to + timedelta(days=1), time.min)
             query = query.where(ReservationModel.starts_at < next_day)
+        if starts_after is not None:
+            query = query.where(ReservationModel.starts_at > starts_after)
         return list(self.session.scalars(query))
 
     def get(self, reservation_id: int) -> ReservationModel | None:
